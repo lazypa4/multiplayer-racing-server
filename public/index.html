@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Turbo Rivals</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏁</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Main menu -->
+  <section id="menu" class="screen active">
+    <div class="menu-wrap">
+      <h1 class="logo">TURBO<span>RIVALS</span></h1>
+      <p class="tagline">Multiplayer top-down racing. Grab some friends, pick a track, floor it.</p>
+      <div class="card">
+        <label class="field">
+          <span>Your name</span>
+          <input id="name" maxlength="16" placeholder="Racer" autocomplete="off">
+        </label>
+        <div class="field">
+          <span>Car color</span>
+          <div id="menu-colors" class="swatches"></div>
+        </div>
+        <div class="menu-actions">
+          <button id="create" class="btn primary">Create room</button>
+          <div class="join-row">
+            <input id="code" maxlength="4" placeholder="CODE" autocomplete="off" spellcheck="false">
+            <button id="join" class="btn">Join</button>
+          </div>
+        </div>
+        <p id="menu-status" class="status" aria-live="polite"></p>
+        <p id="menu-error" class="error" role="alert"></p>
+      </div>
+      <div class="controls-help">
+        <div><kbd>W</kbd><kbd>↑</kbd> Accelerate</div>
+        <div><kbd>S</kbd><kbd>↓</kbd> Brake / reverse</div>
+        <div><kbd>A</kbd><kbd>D</kbd><kbd>←</kbd><kbd>→</kbd> Steer</div>
+        <div><kbd>Space</kbd> Handbrake drift</div>
+        <div><kbd>Shift</kbd> Fire a turbo (grab ⚡ capsules)</div>
+        <div><kbd>R</kbd> Reset car · <kbd>M</kbd> Mute</div>
+        <div><kbd>C</kbd> Change camera view</div>
+        <div><kbd>−</kbd><kbd>+</kbd> / scroll wheel Zoom</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lobby -->
+  <section id="lobby" class="screen">
+    <div class="lobby-wrap">
+      <header class="lobby-head">
+        <div>
+          <div class="eyebrow">Room code</div>
+          <div id="room-code" class="room-code">----</div>
+        </div>
+        <div class="invite">
+          <div class="eyebrow">Invite friends</div>
+          <div class="invite-row">
+            <input id="invite-url" readonly>
+            <button id="copy-invite" class="btn small">Copy</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="lobby-grid">
+        <div class="card">
+          <div class="card-title">
+            <h2>Racers <span id="player-count" class="muted"></span></h2>
+            <div id="bot-controls" class="host-only">
+              <button id="add-bot" class="btn small">+ Bot</button>
+              <button id="remove-bot" class="btn small ghost">− Bot</button>
+            </div>
+          </div>
+          <ul id="players" class="players"></ul>
+          <div class="field">
+            <span>Your color</span>
+            <div id="lobby-colors" class="swatches"></div>
+          </div>
+          <div class="field">
+            <span>Camera view <span class="muted">· only changes your screen</span></span>
+            <div id="lobby-camera" class="cam-picker"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><h2>Track</h2></div>
+          <div id="tracks" class="tracks"></div>
+          <div class="laps-row">
+            <span>Laps</span>
+            <div class="stepper">
+              <button id="laps-down" class="btn small ghost" aria-label="Fewer laps">−</button>
+              <strong id="laps">3</strong>
+              <button id="laps-up" class="btn small ghost" aria-label="More laps">+</button>
+            </div>
+          </div>
+          <button id="start" class="btn primary big">Start race</button>
+          <p id="lobby-status" class="muted center"></p>
+        </div>
+      </div>
+      <button id="leave" class="btn ghost small leave">Leave room</button>
+    </div>
+  </section>
+
+  <!-- In-race HUD -->
+  <section id="hud" class="screen">
+    <div class="hud-top-left">
+      <div class="pos"><span id="hud-pos">1</span><sup id="hud-pos-suffix">st</sup><small id="hud-pos-total">/1</small></div>
+      <div class="hud-line"><span class="eyebrow">Lap</span> <b id="hud-lap">1/3</b></div>
+      <div class="hud-line"><span class="eyebrow">Time</span> <b id="hud-time">0:00.000</b></div>
+      <div class="hud-line"><span class="eyebrow">Best</span> <b id="hud-best">—</b></div>
+      <ol id="standings" class="standings"></ol>
+    </div>
+    <div class="hud-top-right">
+      <canvas id="minimap" width="180" height="180"></canvas>
+      <div id="hud-ping" class="ping"></div>
+    </div>
+    <div class="hud-bottom">
+      <div class="speed"><b id="hud-speed">0</b><span>km/h</span></div>
+      <div class="turbo" id="turbo">
+        <div id="turbo-pop" class="turbo-pop">+1 TURBO</div>
+        <div class="turbo-bar"><div id="turbo-time"></div></div>
+        <div class="turbo-slots" id="turbo-slots"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="turbo-label"><b id="turbo-count">0</b>TURBO<span class="turbo-key">SHIFT</span></div>
+      </div>
+    </div>
+    <div id="banner" class="banner"></div>
+    <div id="sub-banner" class="sub-banner"></div>
+    <div id="spectate" class="spectate">Spectating — you'll race next round. <span class="muted">←/→ to switch car</span></div>
+    <div class="view-controls">
+      <button id="mute" title="Mute (M)">🔊</button>
+      <button id="camera" title="Change camera view (C)">🎥 <span id="camera-name">Classic</span></button>
+      <button id="zoom-out" title="Zoom out (−)" aria-label="Zoom out">−</button>
+      <button id="zoom-in" title="Zoom in (+)" aria-label="Zoom in">+</button>
+    </div>
+    <div id="view-hint" class="view-hint"></div>
+
+    <div id="touch" class="touch">
+      <div class="touch-left">
+        <button data-key="left">◀</button>
+        <button data-key="right">▶</button>
+      </div>
+      <div class="touch-right">
+        <button data-key="nitro" class="t-nitro">TURBO</button>
+        <button data-key="handbrake" class="t-drift">DRIFT</button>
+        <button data-key="down" class="t-brake">BRAKE</button>
+        <button data-key="up" class="t-gas">GAS</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="results" class="screen overlay">
+    <div class="card results-card">
+      <div class="eyebrow" id="results-sub"></div>
+      <h2>Race results</h2>
+      <table>
+        <thead><tr><th>#</th><th>Racer</th><th>Time</th><th>Best lap</th></tr></thead>
+        <tbody id="results-body"></tbody>
+      </table>
+      <button id="back-to-lobby" class="btn primary big">Back to lobby</button>
+    </div>
+  </section>
+
+  <section id="disconnected" class="screen overlay">
+    <div class="card center">
+      <h2>Connection lost</h2>
+      <p class="muted">The game server stopped responding.</p>
+      <button class="btn primary" onclick="location.reload()">Reconnect</button>
+    </div>
+  </section>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="config.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

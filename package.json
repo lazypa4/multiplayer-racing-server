@@ -1,0 +1,17 @@
+{
+  "name": "turbo-rivals",
+  "version": "1.0.0",
+  "description": "Top-down multiplayer car racing game for the browser",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "package": "node scripts/package.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

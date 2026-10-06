@@ -1,0 +1,10 @@
+# Render Blueprint for the Turbo Rivals game server.
+# In the Render dashboard choose New > Blueprint and pick the repo with this file.
+services:
+  - type: web
+    name: turbo-rivals
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
